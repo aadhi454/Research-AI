@@ -38,13 +38,13 @@ from researchmate.styles import (
 
 
 st.set_page_config(
-    page_title="ResearchMate AI",
-    page_icon="📚",
+    page_title="Research AI · AGENTIC-AI",
+    page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Inject cinematic deep blue/teal CSS and SVG atmosphere
+# Inject violet-cosmos CSS and SVG atmosphere — AGENTIC-AI edition
 st.html(CUSTOM_CSS)
 
 # Initialize session state for extracted pages, paper metadata, grounded chat, and paper analysis
@@ -88,6 +88,9 @@ st.html(get_hero_html())
 
 # Sidebar configuration and status
 with st.sidebar:
+    st.markdown("### 🔬 Research AI · AGENTIC-AI")
+    st.caption("vSalagundiadikeshavareddy · 1CR24AD106")
+    st.divider()
     st.header("Project status")
     if settings.gemini_api_key and settings.gemini_api_key.strip() not in ("", "your_gemini_api_key_here"):
         st.success("Gemini key detected in local environment", icon=":material/check_circle:")
@@ -117,21 +120,22 @@ with st.sidebar:
             st.caption("📊 Presentation: Deck ready")
 
 overview, paper_chat, viva, slides, flashcards, dashboard = st.tabs(
-    ["Overview", "Paper chat", "Viva practice", "Presentation", "Flashcards", "Dashboard"]
+    ["🏠 Overview", "💬 Paper Chat", "🎓 Viva Practice", "📊 Presentation", "🗂️ Flashcards", "📈 Dashboard"]
 )
 
 with overview:
-    st.subheader("Your research workflow")
+    st.subheader("🚀 Your Agentic Research Workflow")
     st.html(get_workflow_cards_html())
     st.info(
-        "PDF extraction, grounded paper chat, paper analysis, PowerPoint generation, and interactive viva practice are active. "
-        "Flashcards and the learning dashboard track your study progress locally.",
+        "Research AI (AGENTIC-AI) · PDF extraction, grounded paper chat, paper analysis, PowerPoint generation, "
+        "and interactive viva practice are active. Flashcards and the learning dashboard track your study progress locally. "
+        "Built by: vSalagundiadikeshavareddy | 1CR24AD106",
         icon=":material/info:",
     )
 
 with paper_chat:
-    st.subheader("Paper intake & grounded chat")
-    st.caption("Upload a research paper to extract page-indexed text, analyze full-paper insights, and chat with evidence-grounded AI.")
+    st.subheader("📄 Paper Intake & Grounded Chat")
+    st.caption("Upload a research paper to extract page-indexed text, analyze full-paper insights, and chat with evidence-grounded AI. · AGENTIC-AI by vSalagundiadikeshavareddy")
 
     uploaded_file = st.file_uploader(
         "Upload a research paper (PDF)",
@@ -386,10 +390,10 @@ with paper_chat:
 
         # Unified "Ask ResearchMate" & Grounded Chat Section
         st.divider()
-        st.subheader("Ask ResearchMate")
+        st.subheader("🧠 Ask Research AI")
         st.caption(
             "Ask a question about this paper, request a full summary or key concepts, or inquire about viva and presentations. "
-            "ResearchMate automatically detects your intent and routes to the right feature."
+            "Research AI automatically detects your intent and routes to the right feature."
         )
 
         with st.form("paper_qa_form", clear_on_submit=True):
@@ -400,7 +404,7 @@ with paper_chat:
             )
             col_submit, col_status = st.columns([1, 3], vertical_alignment="center")
             with col_submit:
-                submit_qa = st.form_submit_button("Ask ResearchMate", type="primary", icon=":material/send:")
+                submit_qa = st.form_submit_button("Ask Research AI 🔬", type="primary", icon=":material/send:")
             with col_status:
                 if is_paper_fully_indexed(
                     st.session_state["uploaded_paper_name"],
@@ -533,7 +537,7 @@ with paper_chat:
         st.info("Upload a research paper PDF above to enable full-paper summary and key concepts extraction.", icon=":material/info:")
 
         st.divider()
-        st.subheader("Ask ResearchMate")
+        st.subheader("🧠 Ask Research AI")
         st.text_input(
             "Ask a question or request an action",
             placeholder="e.g. 'What dataset was used?', 'Summarize this paper', 'Extract key concepts'",
@@ -542,8 +546,8 @@ with paper_chat:
         st.caption("Upload a research paper above to enable intent-routed assistance.")
 
 with viva:
-    st.subheader("Interactive viva simulator")
-    st.caption(f"Practice a paper-specific oral defense with up to {VIVA_QUESTION_LIMIT} questions. Get evidence-grounded feedback after each answer.")
+    st.subheader("🎓 Interactive Viva Simulator")
+    st.caption(f"Practice a paper-specific oral defense with up to {VIVA_QUESTION_LIMIT} questions. Get evidence-grounded feedback after each answer. · AGENTIC-AI")
 
     if not st.session_state.get("extracted_pages"):
         st.info("Upload a research paper in the Paper chat tab to start a viva session.", icon=":material/upload_file:")
