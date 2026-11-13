@@ -1,6 +1,10 @@
-# ResearchMate AI
+# Research AI · AGENTIC-AI
 
-ResearchMate AI is a professional, beginner-friendly project for **Assignment 5: Paper-to-Presentation & Viva Agent**. It is designed to help a student understand a research paper, prepare a presentation, and practice explaining the work.
+**Developer:** vSalagundiadikeshavareddy | **Roll No:** 1CR24AD106
+
+Research AI (AGENTIC-AI) is a professional, beginner-friendly project for **Assignment 5: Paper-to-Presentation & Viva Agent**. It is designed to help a student understand a research paper, prepare a presentation, and practice explaining the work.
+
+> **Redesigned Frontend:** Violet Cosmos Theme — holographic grid, aurora nebula gradients, neon violet accents. Completely different look from the original while preserving all functionality.
 
 ## Current status
 
@@ -30,24 +34,14 @@ The initial screen is an application shell; most feature controls are placeholde
 
 ## Architecture
 
-- **Streamlit** provides the interactive GUI.
+- **Streamlit** provides the interactive GUI with a custom violet cosmos theme.
 - **Gemini** handles generation; the key is read from `GEMINI_API_KEY`.
 - **LangChain prompt templates + LCEL** form explicit, inspectable prompt/model/parser chains.
-- **PyMuPDF** will extract PDF text while preserving page numbers.
-- **Gemini embeddings + ChromaDB** will power Agentic RAG retrieval.
-- **python-pptx** will create customizable PowerPoint files.
-- **Pandas + Plotly** will support performance summaries and charts.
+- **PyMuPDF** extracts PDF text while preserving page numbers.
+- **Gemini embeddings + ChromaDB** power Agentic RAG retrieval.
+- **python-pptx** creates customizable PowerPoint files.
+- **Pandas + Plotly** support performance summaries and charts.
 
-## Project map
+## Credits
 
-```text
-app.py                 Streamlit interface shell
-researchmate/
-  config.py            Environment-based settings
-  prompts.py           Prompt template and Gemini LCEL chain
-requirements.txt       Python dependencies
-.env.example           Safe configuration template (no secret)
-ROADMAP.md             Phased delivery plan and assignment mapping
-```
-
-See [ROADMAP.md](ROADMAP.md) for the full implementation sequence and acceptance checklist.
+Built as AGENTIC-AI by **vSalagundiadikeshavareddy** (1CR24AD106). Frontend fully redesigned with a violet cosmos aesthetic — holographic grids, aurora nebula gradients, and neon violet UI components.
