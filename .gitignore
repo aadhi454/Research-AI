@@ -1,0 +1,14 @@
+.venv/
+.venv312/
+__pycache__/
+*.py[cod]
+.env
+.streamlit/secrets.toml
+chroma_db/
+data/uploads/
+data/processed/
+*.pptx
+.DS_Store
+
+data/viva_progress.sqlite3*
+test_manifest_db/
