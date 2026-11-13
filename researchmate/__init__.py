@@ -1,0 +1,83 @@
+"""Core package for ResearchMate AI."""
+
+from researchmate.analysis import (
+    extract_cited_pages,
+    extract_paper_concepts,
+    format_paper_pages_for_analysis,
+    generate_paper_summary,
+    get_page_source_passages,
+)
+from researchmate.pdf import (
+    EmptyPDFError,
+    ExtractedPage,
+    InvalidPDFError,
+    PDFProcessingError,
+    PasswordProtectedPDFError,
+    ScannedPDFError,
+    extract_pages_from_pdf,
+)
+from researchmate.presentation import (
+    THEMES,
+    PresentationError,
+    build_pptx_deck,
+    generate_presentation,
+    parse_and_validate_outline,
+)
+from researchmate.rag import (
+    EmbeddingError,
+    GeminiRetrievalEmbeddings,
+    GenerationError,
+    MissingAPIKeyError,
+    RAGError,
+    RetrievalError,
+    answer_paper_question,
+    format_actionable_error,
+    index_paper_chunks,
+    is_paper_fully_indexed,
+    is_paper_indexed,
+    retrieve_relevant_chunks,
+    split_pages_into_chunks,
+)
+from researchmate.router import (
+    INTENT_LABELS,
+    VALID_INTENTS,
+    detect_intent,
+    execute_routed_request,
+)
+
+__all__ = [
+    "EmbeddingError",
+    "EmptyPDFError",
+    "ExtractedPage",
+    "GeminiRetrievalEmbeddings",
+    "GenerationError",
+    "INTENT_LABELS",
+    "InvalidPDFError",
+    "MissingAPIKeyError",
+    "PDFProcessingError",
+    "PasswordProtectedPDFError",
+    "PresentationError",
+    "RAGError",
+    "RetrievalError",
+    "ScannedPDFError",
+    "THEMES",
+    "VALID_INTENTS",
+    "answer_paper_question",
+    "build_pptx_deck",
+    "detect_intent",
+    "execute_routed_request",
+    "extract_cited_pages",
+    "extract_pages_from_pdf",
+    "extract_paper_concepts",
+    "format_actionable_error",
+    "format_paper_pages_for_analysis",
+    "generate_paper_summary",
+    "generate_presentation",
+    "get_page_source_passages",
+    "index_paper_chunks",
+    "is_paper_fully_indexed",
+    "is_paper_indexed",
+    "parse_and_validate_outline",
+    "retrieve_relevant_chunks",
+    "split_pages_into_chunks",
+]
