@@ -17,7 +17,7 @@
 
 <br/>
 
-**Developer** &nbsp;·&nbsp; `vSalagundiadikeshavareddy` &nbsp;·&nbsp; Roll No: `1CR24AD106` &nbsp;·&nbsp; Branch: `AGENTIC-AI`
+**Developer** &nbsp;·&nbsp; `Salagundiadikeshavareddy` &nbsp;·&nbsp; Roll No: `1CR24AD106` &nbsp;·&nbsp; Branch: `AGENTIC-AI`
 
 </div>
 
@@ -244,6 +244,6 @@ Research-AI/
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=7c3aed&height=120&section=footer&text=AGENTIC-AI%20%7C%201CR24AD106&fontSize=20&fontColor=c084fc&fontAlignY=65&animation=fadeIn" width="100%"/>
 
-**Research AI · AGENTIC-AI** &nbsp;·&nbsp; Built with 💜 by vSalagundiadikeshavareddy
+**Research AI · AGENTIC-AI** &nbsp;·&nbsp; Built with 💜 by Salagundiadikeshavareddy
 
 </div>
