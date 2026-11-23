@@ -69,9 +69,14 @@ def format_actionable_error(exc: Exception, api_key: Optional[str] = None) -> st
             "Gemini API key is required. Please enter your API key in the sidebar under 'AI Configuration', "
             "or set GEMINI_API_KEY in your Streamlit Cloud Secrets / .env file."
         )
-    if "api_key_invalid" in msg_lower or "api key not valid" in msg_lower or ("invalid_argument" in msg_lower and "key" in msg_lower):
+    if any(kw in msg_lower for kw in (
+        "api_key_invalid", "api key not valid", "unauthenticated", "401",
+        "access_token_type_unsupported", "access_token"
+    )) or ("invalid_argument" in msg_lower and "key" in msg_lower):
         return (
-            "Invalid Gemini API key. Please check your GEMINI_API_KEY and verify that it is active in Google AI Studio (https://aistudio.google.com/)."
+            "Invalid Gemini API key: Google rejected the key (401 Unauthenticated). "
+            "Please ensure you are using a standard Gemini API key from Google AI Studio (https://aistudio.google.com/app/apikey). "
+            "Note: Valid Google AI Studio keys start with 'AIzaSy'. Access tokens or OAuth tokens starting with 'AQ.' are not supported."
         )
     if "permission_denied" in msg_lower:
         return (

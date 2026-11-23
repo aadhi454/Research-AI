@@ -319,10 +319,17 @@ def _build_genai_chain(
             except Exception as exc:
                 last_error = exc
                 err_str = str(exc).lower()
-                # If it's a model availability error, try the next candidate
-                if any(kw in err_str for kw in ("not found", "404", "invalid argument", "unsupported", "400", "model", "deprecated")):
+                # Critical: If it's an authentication, permission, or quota error, re-raise immediately.
+                # Do NOT swallow auth errors or retry other models when the key itself is rejected.
+                if any(kw in err_str for kw in (
+                    "401", "unauthenticated", "api key not valid", "api_key_invalid",
+                    "access_token", "403", "permission_denied", "resource_exhausted", "429"
+                )):
+                    raise
+
+                # If it's specifically a model name / version availability error (404, not found, deprecated), try the next candidate
+                if any(kw in err_str for kw in ("not found", "404", "model_not_found", "deprecated", "unknown model")):
                     continue
-                # For rate limits or auth errors, re-raise immediately
                 raise
 
         # Final fallback: use langchain-google-genai wrapper which uses a different HTTP client
@@ -333,6 +340,7 @@ def _build_genai_chain(
                 model="gemini-1.5-flash",
                 google_api_key=api_key,
                 temperature=0.4,
+                max_retries=0,
             )
             lc_messages = prompt_value.to_messages()
             lc_result = lc_llm.invoke(lc_messages)
