@@ -277,10 +277,11 @@ def _build_genai_chain(
 
         user_content = "\n\n".join(user_texts)
 
-        # Build prioritized list of models to try
+        # Build prioritized list of models to try.
+        # gemini-1.5-flash is widest availability on free-tier keys — always try first.
         primary_model = settings.gemini_model
         candidate_models = []
-        for m in [primary_model, "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]:
+        for m in ["gemini-1.5-flash", primary_model, "gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro"]:
             if m and m not in candidate_models:
                 candidate_models.append(m)
 
@@ -318,11 +319,28 @@ def _build_genai_chain(
             except Exception as exc:
                 last_error = exc
                 err_str = str(exc).lower()
-                # If it's a 404 (model not found) or 400 (invalid argument), try the next candidate model
-                if "not found" in err_str or "404" in err_str or "invalid argument" in err_str or "unsupported" in err_str or "400" in err_str:
+                # If it's a model availability error, try the next candidate
+                if any(kw in err_str for kw in ("not found", "404", "invalid argument", "unsupported", "400", "model", "deprecated")):
                     continue
                 # For rate limits or auth errors, re-raise immediately
                 raise
+
+        # Final fallback: use langchain-google-genai wrapper which uses a different HTTP client
+        # and may succeed where google-genai SDK v3 fails on certain API versions / keys.
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            lc_llm = ChatGoogleGenerativeAI(
+                model="gemini-1.5-flash",
+                google_api_key=api_key,
+                temperature=0.4,
+            )
+            lc_messages = prompt_value.to_messages()
+            lc_result = lc_llm.invoke(lc_messages)
+            if lc_result and lc_result.content:
+                return lc_result.content
+        except Exception as lc_exc:
+            # If langchain fallback also fails, raise original error
+            last_error = last_error or lc_exc
 
         if last_error:
             raise last_error

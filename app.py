@@ -94,8 +94,8 @@ with st.sidebar:
     st.subheader("⚙️ AI Configuration")
     active_key = settings.gemini_api_key
     if active_key and active_key.strip() not in ("", "your_gemini_api_key_here", "replace-with-your-gemini-api-key"):
-        st.success("API key active", icon=":material/check_circle:")
-        with st.expander("Change or override key", expanded=False):
+        st.success("✅ API key active")
+        with st.expander("🔑 Change or override key", expanded=False):
             custom_key = st.text_input(
                 "Gemini API Key",
                 type="password",
@@ -107,7 +107,7 @@ with st.sidebar:
                 st.session_state["user_gemini_api_key"] = custom_key.strip()
                 st.rerun()
     else:
-        st.warning("API key required", icon=":material/key:")
+        st.warning("🔑 API key required")
         entered_key = st.text_input(
             "Enter Gemini API Key",
             type="password",

@@ -13,193 +13,33 @@ CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ====================================================================
-   GLOBAL MODERN SAAS THEME (Perplexity / Linear / Notion inspired)
+   CUSTOM CLASSES ONLY — do NOT override Streamlit native widget CSS.
+   Colors/theme are set via .streamlit/config.toml.
    ==================================================================== */
 
 :root {
-    --bg-main: #090d16;
-    --bg-surface: #111827;
-    --bg-card: rgba(17, 24, 39, 0.75);
-    --bg-glass: rgba(15, 23, 42, 0.65);
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-highlight: rgba(59, 130, 246, 0.3);
     --primary: #3b82f6;
     --primary-glow: rgba(59, 130, 246, 0.15);
+    --bg-card: rgba(17, 24, 39, 0.75);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-highlight: rgba(59, 130, 246, 0.3);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
     --accent-emerald: #10b981;
-    --accent-indigo: #6366f1;
-    --accent-amber: #f59e0b;
 }
 
-html, body, [class*="st-"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-}
-
-code, pre, .stCodeBlock {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
-}
-
+/* Safe: only targets the app background wrapper, not inner widgets */
 .stApp {
-    background-color: var(--bg-main) !important;
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%) !important;
+    background-color: #090d16 !important;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.07) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%) !important;
     background-attachment: fixed !important;
-    color: var(--text-primary) !important;
 }
 
-/* App block container */
-.block-container {
-    max-width: 1200px !important;
-    padding-top: 1rem !important;
-    padding-bottom: 3rem !important;
-}
-
-/* Header & Typography */
-h1, h2, h3, h4, h5, h6 {
-    color: var(--text-primary) !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-}
-
-p, span, label {
-    color: var(--text-secondary);
-}
-
-/* Sidebar styling */
-section[data-testid="stSidebar"] {
-    background-color: #0b101b !important;
-    border-right: 1px solid var(--border-subtle) !important;
-}
-
-section[data-testid="stSidebar"] div.block-container {
-    padding-top: 1.5rem !important;
-}
-
-/* Modern Card containers */
-div[data-testid="stVerticalBlock"] > div[data-testid="stContainer"][border="true"],
-.stCard {
-    background: var(--bg-card) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 12px !important;
-    backdrop-filter: blur(12px) !important;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3) !important;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-div[data-testid="stVerticalBlock"] > div[data-testid="stContainer"][border="true"]:hover {
-    border-color: var(--border-highlight) !important;
-}
-
-/* Tabs styling */
-div[data-testid="stTabs"] {
-    border-top: 1px solid var(--border-subtle) !important;
-    padding-top: 0.5rem !important;
-}
-
-button[data-testid="stTab"] {
-    font-size: 0.92rem !important;
-    font-weight: 500 !important;
-    color: var(--text-secondary) !important;
-    border-radius: 8px !important;
-    padding: 0.5rem 1rem !important;
-    transition: all 0.15s ease-in-out !important;
-}
-
-button[data-testid="stTab"]:hover {
-    color: var(--text-primary) !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-}
-
-button[data-testid="stTab"][aria-selected="true"] {
-    color: var(--primary) !important;
-    font-weight: 600 !important;
-    border-bottom: 2px solid var(--primary) !important;
-}
-
-/* Buttons */
-button[kind="primary"] {
-    background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.35) !important;
-    transition: all 0.18s ease-in-out !important;
-}
-
-button[kind="primary"]:hover {
-    background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
-    box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.45) !important;
-    transform: translateY(-1px) !important;
-}
-
-button[kind="secondary"] {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid var(--border-subtle) !important;
-    color: var(--text-primary) !important;
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-}
-
-button[kind="secondary"]:hover {
-    background: rgba(255, 255, 255, 0.09) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-/* Inputs & Textareas */
-input, textarea, .stSelectbox > div > div {
-    background-color: #0d1322 !important;
-    border: 1px solid var(--border-subtle) !important;
-    color: var(--text-primary) !important;
-    border-radius: 8px !important;
-}
-
-input:focus, textarea:focus, .stSelectbox > div > div:focus-within {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 2px var(--primary-glow) !important;
-}
-
-/* Metrics */
-div[data-testid="stMetric"] {
-    background: rgba(17, 24, 39, 0.6) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 10px !important;
-    padding: 0.85rem 1.1rem !important;
-    backdrop-filter: blur(8px) !important;
-}
-
-div[data-testid="stMetricLabel"] {
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.04em !important;
-    color: var(--text-muted) !important;
-    text-transform: uppercase !important;
-}
-
-div[data-testid="stMetricValue"] {
-    font-size: 1.45rem !important;
-    font-weight: 700 !important;
-    color: var(--text-primary) !important;
-}
-
-/* Status box & expanders */
-div[data-testid="stStatusWidget"] {
-    background: var(--bg-surface) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 10px !important;
-}
-
-div[data-testid="stExpander"] {
-    background: rgba(17, 24, 39, 0.5) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: 8px !important;
-}
-
-/* Perplexity-style badge pills */
+/* Perplexity-style badge pills — custom class only */
 .rp-badge {
     display: inline-flex;
     align-items: center;
@@ -226,7 +66,7 @@ div[data-testid="stExpander"] {
     border: 1px solid rgba(245, 158, 11, 0.24);
 }
 
-/* Live Agent Pulse Dot */
+/* Live Agent Pulse Dot — custom class only */
 .rp-pulse-dot {
     width: 7px;
     height: 7px;
@@ -242,7 +82,7 @@ div[data-testid="stExpander"] {
     50% { opacity: 0.45; transform: scale(0.9); }
 }
 
-/* Citations Pill */
+/* Citations Pill — custom class only */
 .rp-citation-pill {
     display: inline-flex;
     align-items: center;
