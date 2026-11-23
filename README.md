@@ -244,7 +244,7 @@ Research-AI/
 
 | Field | Details |
 |:------|:--------|
-| **Name** | vSalagundiadikeshavareddy |
+| **Name** | Salagundiadikeshavareddy |
 | **Roll No** | 1CR24AD106 |
 | **Project** | AGENTIC-AI · Research AI |
 | **Assignment** | Paper-to-Presentation & Viva Agent |
