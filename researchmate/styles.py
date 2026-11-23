@@ -560,6 +560,60 @@ div[data-testid="stMetricValue"] {{
         margin-bottom: 0.8rem;
     }}
 }}
+
+/* Refined application shell: reduce visual noise and improve hierarchy */
+.block-container {{
+    max-width: 1180px !important;
+    padding-top: 0.8rem !important;
+}}
+
+.rm-top-bar {{
+    margin-bottom: 0.7rem !important;
+    padding: 0.45rem 0.2rem 0.65rem 0.2rem !important;
+}}
+
+.rm-hero {{
+    padding: 1.2rem 1rem 1.3rem 1rem !important;
+    margin-bottom: 0.8rem !important;
+}}
+
+.rm-hero-emblem {{
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.35rem !important;
+    margin-bottom: 0.45rem !important;
+}}
+
+.rm-hero-title {{
+    font-size: 2.15rem !important;
+    letter-spacing: 0.055em !important;
+}}
+
+.rm-hero-subtitle {{
+    max-width: 720px !important;
+    margin-top: 0.35rem !important;
+}}
+
+.rm-hero-author {{
+    margin-bottom: 0.6rem !important;
+}}
+
+section[data-testid="stSidebar"] {{
+    min-width: 260px !important;
+}}
+
+section[data-testid="stSidebar"] div.block-container {{
+    padding-top: 1.2rem !important;
+}}
+
+div[data-testid="stTabs"] {{
+    border-top: 1px solid rgba(192, 132, 252, 0.12);
+    padding-top: 0.35rem;
+}}
+
+div[data-testid="stMetric"] {{
+    min-height: 94px;
+}}
 </style>
 """
 

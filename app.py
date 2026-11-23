@@ -80,24 +80,29 @@ if "flashcard_revealed" not in st.session_state:
     st.session_state["flashcard_revealed"] = False
 VIVA_QUESTION_LIMIT = 6
 
-# Top metadata navigation bar with corner stars
-st.html(get_header_html())
-
-# Central hero banner inspired by the bright-path beacon
-st.html(get_hero_html())
+# Compact product header
+st.html("""
+<div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;
+margin:.25rem 0 1rem; padding:.8rem 1rem; border:1px solid rgba(192,132,252,.16);
+border-radius:14px; background:rgba(11,4,28,.72); backdrop-filter:blur(14px);">
+  <div>
+    <div style="font-size:.68rem; letter-spacing:.16em; color:#a78bfa; text-transform:uppercase;">AGENTIC-AI workspace</div>
+    <div style="font-size:1.25rem; font-weight:750; color:#f8fafc;">Research AI</div>
+  </div>
+  <div style="font-size:.75rem; color:#a7a0b8;">PDF analysis · Grounded chat · Viva · Slides</div>
+</div>
+""")
 
 # Sidebar configuration and status
 with st.sidebar:
     st.markdown("### 🔬 Research AI · AGENTIC-AI")
-    st.caption("vSalagundiadikeshavareddy · 1CR24AD106")
+    st.caption("Academic intelligence workspace")
     st.divider()
-    st.header("Project status")
+    st.subheader("Workspace")
     if settings.gemini_api_key and settings.gemini_api_key.strip() not in ("", "your_gemini_api_key_here"):
-        st.success("Gemini key detected in local environment", icon=":material/check_circle:")
+        st.success("AI services connected", icon=":material/check_circle:")
     else:
-        st.info("Add GEMINI_API_KEY to your local .env file to enable AI features.", icon=":material/key:")
-    st.markdown("**Chosen model:** `" + settings.gemini_model + "`")
-    st.markdown("**Embedding model:** `" + settings.gemini_embedding_model + "`")
+        st.info("AI features are ready for deployment secrets.", icon=":material/cloud:")
 
     if st.session_state.get("uploaded_paper_name") and st.session_state.get("extracted_pages"):
         st.divider()
@@ -124,14 +129,27 @@ overview, paper_chat, viva, slides, flashcards, dashboard = st.tabs(
 )
 
 with overview:
-    st.subheader("🚀 Your Agentic Research Workflow")
+    st.subheader("Research workspace")
+    metric1, metric2, metric3 = st.columns(3)
+    with metric1:
+        st.metric(
+            "Active paper",
+            st.session_state["uploaded_paper_name"] or "Not uploaded",
+        )
+    with metric2:
+        st.metric(
+            "Pages ready",
+            len(st.session_state["extracted_pages"] or []),
+        )
+    with metric3:
+        completed = sum(
+            bool(st.session_state.get(key))
+            for key in ("paper_summary_data", "paper_concepts_data", "presentation_data", "flashcard_deck")
+        )
+        st.metric("Outputs generated", completed)
+
+    st.markdown("#### Agent workflow")
     st.html(get_workflow_cards_html())
-    st.info(
-        "Research AI (AGENTIC-AI) · PDF extraction, grounded paper chat, paper analysis, PowerPoint generation, "
-        "and interactive viva practice are active. Flashcards and the learning dashboard track your study progress locally. "
-        "Built by: vSalagundiadikeshavareddy | 1CR24AD106",
-        icon=":material/info:",
-    )
 
 with paper_chat:
     st.subheader("📄 Paper Intake & Grounded Chat")
@@ -264,7 +282,7 @@ with paper_chat:
             if btn_summary:
                 if not settings.gemini_api_key or settings.gemini_api_key.strip() in ("", "your_gemini_api_key_here"):
                     st.error(
-                        "Gemini API key is not configured. Add your GEMINI_API_KEY to the local .env file to enable paper analysis.",
+                        "AI analysis is unavailable until the Gemini service is configured.",
                         icon=":material/key:",
                     )
                 else:
@@ -337,7 +355,7 @@ with paper_chat:
             if btn_concepts:
                 if not settings.gemini_api_key or settings.gemini_api_key.strip() in ("", "your_gemini_api_key_here"):
                     st.error(
-                        "Gemini API key is not configured. Add your GEMINI_API_KEY to the local .env file to enable paper analysis.",
+                        "AI analysis is unavailable until the Gemini service is configured.",
                         icon=":material/key:",
                     )
                 else:
@@ -419,7 +437,7 @@ with paper_chat:
                 st.warning("Please type a question or request before submitting.", icon=":material/warning:")
             elif not settings.gemini_api_key or settings.gemini_api_key.strip() in ("", "your_gemini_api_key_here"):
                 st.error(
-                    "Gemini API key is not configured. Add your GEMINI_API_KEY to the local .env file to enable ResearchMate features.",
+                    "AI chat is unavailable until the Gemini service is configured.",
                     icon=":material/key:",
                 )
             else:
@@ -552,7 +570,7 @@ with viva:
     if not st.session_state.get("extracted_pages"):
         st.info("Upload a research paper in the Paper chat tab to start a viva session.", icon=":material/upload_file:")
     elif not settings.gemini_api_key:
-        st.warning("Add GEMINI_API_KEY to your local .env file to enable viva practice.", icon=":material/key:")
+        st.warning("Viva practice is unavailable until the Gemini service is configured.", icon=":material/cloud:")
     else:
         viva_session = st.session_state.get("viva_session")
         start_label = "Start viva practice" if not viva_session else "Start a new session"
@@ -860,7 +878,7 @@ with slides:
                     "your_gemini_api_key_here",
                 ):
                     st.error(
-                        "Gemini API key is not configured. Add your GEMINI_API_KEY to the local .env file to enable presentation generation.",
+                        "Presentation AI is unavailable until the Gemini service is configured.",
                         icon=":material/key:",
                     )
                 else:
@@ -1078,7 +1096,7 @@ with flashcards:
     if not st.session_state.get("extracted_pages"):
         st.info("Upload a research paper in the Paper chat tab to create flashcards.", icon=":material/upload_file:")
     elif not settings.gemini_api_key:
-        st.warning("Add GEMINI_API_KEY to your local .env file to generate flashcards.", icon=":material/key:")
+        st.warning("Flashcard AI is unavailable until the Gemini service is configured.", icon=":material/cloud:")
     else:
         deck = st.session_state.get("flashcard_deck")
         if not deck:
