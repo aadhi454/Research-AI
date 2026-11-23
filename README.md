@@ -4,16 +4,18 @@
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/Live_App-Streamlit_Cloud-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://aadhi454-research-ai-app-agentic-ai-fzfcjc.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.11+-7c3aed?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-App-c084fc?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Gemini](https://img.shields.io/badge/Google-Gemini_AI-a855f7?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/gemini)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-6d28d9?style=for-the-badge&logo=databricks&logoColor=white)](https://trychroma.com)
 [![License](https://img.shields.io/badge/License-MIT-e879f9?style=for-the-badge)](LICENSE)
 
 <br/>
 
+### 🌐 [Click Here to Access the Live Application](https://aadhi454-research-ai-app-agentic-ai-fzfcjc.streamlit.app/)
+
 > ### 🔬 *Turn research papers into compelling presentations and ace your viva defense.*
-> *Powered by Agentic RAG · Gemini · ChromaDB · LangChain*
+> *Powered by Agentic RAG · Google Gemini · ChromaDB · LangChain*
 
 <br/>
 
@@ -22,6 +24,20 @@
 </div>
 
 ---
+
+<br/>
+
+## 🚀 Live Deployment
+
+The application is deployed live on **Streamlit Community Cloud**:
+
+| Property | Details |
+|:---|:---|
+| **Live URL** | [https://aadhi454-research-ai-app-agentic-ai-fzfcjc.streamlit.app/](https://aadhi454-research-ai-app-agentic-ai-fzfcjc.streamlit.app/) |
+| **Status** | 🟢 Live & Operational |
+| **Production Branch** | `AGENTIC-AI` |
+| **Active Generation Model** | `gemini-3.5-flash-lite` |
+| **Active Vector Embedding** | `models/gemini-embedding-001` |
 
 <br/>
 
@@ -115,10 +131,10 @@ It was built as part of **Assignment 5: Paper-to-Presentation & Viva Agent**, re
 
 | Layer | Technology |
 |:------|:-----------|
-| **UI Framework** | Streamlit · Custom Violet Cosmos CSS |
-| **AI / LLM** | Google Gemini (gemini-2.0-flash) |
-| **Embeddings** | Google Gemini Embedding Model |
-| **Vector Store** | ChromaDB |
+| **UI Framework** | Streamlit · Obsidian Dark & Slate Design |
+| **AI / LLM** | Google Gemini (`gemini-3.5-flash-lite`, `gemini-3.8-flash`) |
+| **Embeddings** | Google Gemini Embeddings (`models/gemini-embedding-001`) |
+| **Vector Store** | ChromaDB (Vector Indexing & Similarity Search) |
 | **Prompt Chains** | LangChain LCEL |
 | **PDF Processing** | PyMuPDF (fitz) |
 | **Presentations** | python-pptx |
@@ -180,8 +196,8 @@ streamlit run app.py
 
 ```toml
 GEMINI_API_KEY = "your-gemini-api-key"
-GEMINI_MODEL = "gemini-2.0-flash"
-GEMINI_EMBEDDING_MODEL = "models/text-embedding-004"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+GEMINI_EMBEDDING_MODEL = "models/gemini-embedding-001"
 CHROMA_DIR = "./chroma_db"
 ```
 
