@@ -7,14 +7,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Valid and verified Gemini model names
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
-DEFAULT_EMBEDDING_MODEL = "models/text-embedding-004"
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_EMBEDDING_MODEL = "models/gemini-embedding-001"
 DEFAULT_CHROMA_DIR = "./chroma_db"
 
 MODEL_FALLBACKS = [
+    "gemini-3.5-flash-lite",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
-    "gemini-1.5-pro",
 ]
 
 def normalize_model_name(model_name: Optional[str]) -> str:
@@ -22,24 +24,21 @@ def normalize_model_name(model_name: Optional[str]) -> str:
     if not model_name or not model_name.strip():
         return DEFAULT_GEMINI_MODEL
     
-    clean = model_name.strip().lower()
-    # Map non-existent or experimental names
-    if "2.5-flash" in clean:
-        return "gemini-2.0-flash"
+    clean = model_name.strip()
     if clean.startswith("models/"):
         clean = clean[len("models/"):]
+    # Map deprecated 2.5-flash which Google AI Studio retired for new users
+    if clean in ("gemini-2.5-flash", "gemini-2.5-flash-lite"):
+        return "gemini-3.5-flash-lite"
     return clean
 
 
 def normalize_embedding_model_name(emb_name: Optional[str]) -> str:
-    """Ensure standard Google embedding model format."""
+    """Ensure standard Google embedding model format with models/ prefix."""
     if not emb_name or not emb_name.strip():
         return DEFAULT_EMBEDDING_MODEL
     
     clean = emb_name.strip()
-    if "gemini-embedding" in clean or "embedding-001" in clean:
-        # gemini-embedding-001 does not exist on v1beta API; use text-embedding-004
-        return "models/text-embedding-004"
     if not clean.startswith("models/"):
         return f"models/{clean}"
     return clean

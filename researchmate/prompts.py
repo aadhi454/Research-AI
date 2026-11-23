@@ -278,10 +278,9 @@ def _build_genai_chain(
         user_content = "\n\n".join(user_texts)
 
         # Build prioritized list of models to try.
-        # gemini-1.5-flash is widest availability on free-tier keys — always try first.
         primary_model = settings.gemini_model
         candidate_models = []
-        for m in ["gemini-1.5-flash", primary_model, "gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro"]:
+        for m in [primary_model, "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
             if m and m not in candidate_models:
                 candidate_models.append(m)
 

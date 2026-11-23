@@ -112,9 +112,9 @@ class GeminiRetrievalEmbeddings(Embeddings):
     """
 
     def __init__(self, model: str, google_api_key: str, timeout: float = 60.0):
-        # Automatically map non-existent or deprecated embedding models
-        if not model or "gemini-embedding" in model or "embedding-001" in model:
-            model = "models/text-embedding-004"
+        # Ensure model has models/ prefix
+        if not model:
+            model = settings.gemini_embedding_model or "models/gemini-embedding-001"
         elif not model.startswith("models/"):
             model = f"models/{model}"
 
@@ -152,10 +152,11 @@ class GeminiRetrievalEmbeddings(Embeddings):
                 )
                 return fallback.embed_documents(texts)
             except Exception:
-                # Fallback 2: using models/text-embedding-004 directly
+                # Fallback 2: try alternative embedding model
+                alt_model = "models/gemini-embedding-001" if "text-embedding" in self.model else "models/text-embedding-004"
                 try:
                     fallback_default = GoogleGenerativeAIEmbeddings(
-                        model="models/text-embedding-004",
+                        model=alt_model,
                         google_api_key=self.google_api_key,
                         request_options={"timeout": self.timeout},
                     )
@@ -178,10 +179,11 @@ class GeminiRetrievalEmbeddings(Embeddings):
                 )
                 return fallback.embed_query(text)
             except Exception:
-                # Fallback 2: using models/text-embedding-004 directly
+                # Fallback 2: try alternative embedding model
+                alt_model = "models/gemini-embedding-001" if "text-embedding" in self.model else "models/text-embedding-004"
                 try:
                     fallback_default = GoogleGenerativeAIEmbeddings(
-                        model="models/text-embedding-004",
+                        model=alt_model,
                         google_api_key=self.google_api_key,
                         request_options={"timeout": self.timeout},
                     )

@@ -55,14 +55,14 @@ def _create_sample_pdf_bytes(num_pages: int = 3) -> bytes:
 
 class TestModelAndSettingsNormalization:
     def test_model_normalization(self):
-        assert normalize_model_name("gemini-2.5-flash") == "gemini-2.0-flash"
+        assert normalize_model_name("gemini-2.5-flash") == "gemini-3.5-flash-lite"
         assert normalize_model_name("models/gemini-1.5-flash") == "gemini-1.5-flash"
         assert normalize_model_name(None) == DEFAULT_GEMINI_MODEL
         assert normalize_model_name("") == DEFAULT_GEMINI_MODEL
 
     def test_embedding_normalization(self):
-        assert normalize_embedding_model_name("models/gemini-embedding-001") == "models/text-embedding-004"
-        assert normalize_embedding_model_name("gemini-embedding-001") == "models/text-embedding-004"
+        assert normalize_embedding_model_name("models/gemini-embedding-001") == "models/gemini-embedding-001"
+        assert normalize_embedding_model_name("gemini-embedding-001") == "models/gemini-embedding-001"
         assert normalize_embedding_model_name("text-embedding-004") == "models/text-embedding-004"
         assert normalize_embedding_model_name(None) == DEFAULT_EMBEDDING_MODEL
 

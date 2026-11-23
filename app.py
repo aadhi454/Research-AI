@@ -119,8 +119,10 @@ with st.sidebar:
             st.session_state["user_gemini_api_key"] = entered_key.strip()
             st.rerun()
 
-    model_options = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+    model_options = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
     current_model = settings.gemini_model
+    if current_model and current_model not in model_options:
+        model_options.insert(0, current_model)
     selected_model_idx = model_options.index(current_model) if current_model in model_options else 0
     selected_model = st.selectbox(
         "Active Model",
