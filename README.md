@@ -171,6 +171,22 @@ streamlit run app.py
 
 🌐 Open your browser at `http://localhost:8501`
 
+### Deploy on Streamlit Community Cloud
+
+1. Push the repository to GitHub.
+2. Open [share.streamlit.io](https://share.streamlit.io/) and create an app from `aadhi454/Research-AI`.
+3. Set the main file to `app.py` and select the `AGENTIC-AI` branch.
+4. In **App settings → Secrets**, add:
+
+```toml
+GEMINI_API_KEY = "your-gemini-api-key"
+GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_EMBEDDING_MODEL = "models/gemini-embedding-001"
+CHROMA_DIR = "./chroma_db"
+```
+
+Then deploy. Streamlit Secrets are read automatically and are never stored in the repository.
+
 <br/>
 
 ## 🎨 UI Theme — Violet Cosmos
