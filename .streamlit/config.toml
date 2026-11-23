@@ -1,22 +1,15 @@
 [theme]
 base = "dark"
-primaryColor = "#c084fc"
-backgroundColor = "#080012"
-secondaryBackgroundColor = "#120826"
-textColor = "#f8fafc"
+primaryColor = "#3b82f6"
+backgroundColor = "#0b0f19"
+secondaryBackgroundColor = "#111827"
+textColor = "#f3f4f6"
 font = "sans serif"
-borderColor = "#2d1b6e"
-showWidgetBorder = true
-baseRadius = "0.9rem"
-
-[theme.sidebar]
-backgroundColor = "#070011"
-secondaryBackgroundColor = "#0e0520"
-textColor = "#e2e8f0"
-borderColor = "#2d1b6e"
 
 [browser]
 gatherUsageStats = false
 
 [server]
 headless = true
+maxUploadSize = 200
+enableCORS = false

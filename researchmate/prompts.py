@@ -241,28 +241,30 @@ PAPER_PRESENTATION_PROMPT = ChatPromptTemplate.from_messages(
 def _build_genai_chain(
     prompt: ChatPromptTemplate,
     timeout: Optional[float] = None,
-    thinking_level: Optional[str] = "low",
+    thinking_level: Optional[str] = None,
 ):
-    """Create an LCEL chain: prompt -> RunnableLambda(Google GenAI SDK Interactions API).
+    """Create an LCEL chain: prompt -> RunnableLambda(Google GenAI SDK generate_content).
 
-    Retains LCEL chain piping, wrapping the official Google GenAI Interactions API
-    inside a RunnableLambda. Properly sends thinking_level='low' to Gemini 3 models
-    (e.g. gemini-3.8-flash, gemini-3.5-flash-lite) to avoid unconstrained thinking latency.
+    Executes generation with automatic model fallback (gemini-2.0-flash -> gemini-1.5-flash)
+    and robust parameter compatibility to prevent HTTP 400 Bad Request errors.
     """
-    if not settings.gemini_api_key:
-        raise RuntimeError("Set GEMINI_API_KEY in your local .env file first.")
 
-    http_options = None
-    if timeout is not None:
-        # HttpOptions timeout is in milliseconds
-        http_options = types.HttpOptions(timeout=int(timeout * 1000))
+    def _call_genai_generate(prompt_value: ChatPromptValue) -> str:
+        api_key = settings.gemini_api_key
+        if not api_key or api_key.strip() in ("", "your_gemini_api_key_here", "replace-with-your-gemini-api-key"):
+            raise RuntimeError(
+                "Gemini API key is not configured. Please enter your API key in the sidebar or set GEMINI_API_KEY."
+            )
 
-    client = genai.Client(
-        api_key=settings.gemini_api_key,
-        http_options=http_options,
-    )
+        http_options = None
+        if timeout is not None:
+            http_options = types.HttpOptions(timeout=int(timeout * 1000))
 
-    def _call_genai_interactions(prompt_value: ChatPromptValue) -> str:
+        client = genai.Client(
+            api_key=api_key.strip(),
+            http_options=http_options,
+        )
+
         messages = prompt_value.to_messages()
         system_instruction = None
         user_texts = []
@@ -275,47 +277,59 @@ def _build_genai_chain(
 
         user_content = "\n\n".join(user_texts)
 
-        # 1. Primary path: Google GenAI Interactions API (recommended for new Gemini projects)
-        try:
-            gen_config = {}
-            if thinking_level:
-                gen_config["thinking_level"] = thinking_level.lower()
+        # Build prioritized list of models to try
+        primary_model = settings.gemini_model
+        candidate_models = []
+        for m in [primary_model, "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]:
+            if m and m not in candidate_models:
+                candidate_models.append(m)
 
-            interaction = client.interactions.create(
-                model=settings.gemini_model,
-                input=user_content,
-                system_instruction=system_instruction,
-                generation_config=gen_config if gen_config else None,
-                timeout=timeout,
-            )
-            output = getattr(interaction, "output_text", None)
-            if output:
-                return output
-        except Exception:
-            # 2. Resilient fallback: client.models.generate_content in google-genai SDK
-            thinking_config = None
-            if thinking_level:
-                try:
-                    thinking_config = types.ThinkingConfig(
-                        thinking_level=thinking_level.upper()
-                    )
-                except Exception:
-                    thinking_config = None
+        last_error = None
+        for model_name in candidate_models:
+            try:
+                # Only include thinking_config for models that explicitly support reasoning
+                thinking_config = None
+                if thinking_level and "thinking" in model_name.lower():
+                    try:
+                        thinking_config = types.ThinkingConfig(
+                            thinking_level=thinking_level.upper()
+                        )
+                    except Exception:
+                        thinking_config = None
 
-            config = types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                thinking_config=thinking_config,
-            )
-            response = client.models.generate_content(
-                model=settings.gemini_model,
-                contents=user_content,
-                config=config,
-            )
-            return response.text or ""
+                config = types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    thinking_config=thinking_config,
+                )
+
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=user_content,
+                    config=config,
+                )
+                if response and response.text:
+                    return response.text
+                elif response and hasattr(response, "candidates") and response.candidates:
+                    first_candidate = response.candidates[0]
+                    if hasattr(first_candidate, "content") and first_candidate.content.parts:
+                        part_texts = [p.text for p in first_candidate.content.parts if hasattr(p, "text") and p.text]
+                        if part_texts:
+                            return "".join(part_texts)
+            except Exception as exc:
+                last_error = exc
+                err_str = str(exc).lower()
+                # If it's a 404 (model not found) or 400 (invalid argument), try the next candidate model
+                if "not found" in err_str or "404" in err_str or "invalid argument" in err_str or "unsupported" in err_str or "400" in err_str:
+                    continue
+                # For rate limits or auth errors, re-raise immediately
+                raise
+
+        if last_error:
+            raise last_error
 
         return ""
 
-    return prompt | RunnableLambda(_call_genai_interactions)
+    return prompt | RunnableLambda(_call_genai_generate)
 
 
 def build_paper_qa_chain(

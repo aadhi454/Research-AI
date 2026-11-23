@@ -13,8 +13,17 @@ _DB_PATH = Path(__file__).resolve().parents[1] / "data" / "viva_progress.sqlite3
 
 
 def _connect() -> sqlite3.Connection:
-    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(_DB_PATH, timeout=10)
+    try:
+        _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(_DB_PATH, timeout=10)
+    except Exception:
+        # Fallback to /tmp or memory if workspace directory is read-only
+        tmp_db = Path("/tmp") / "viva_progress.sqlite3"
+        try:
+            connection = sqlite3.connect(tmp_db, timeout=10)
+        except Exception:
+            connection = sqlite3.connect(":memory:")
+
     connection.row_factory = sqlite3.Row
     connection.execute(
         """CREATE TABLE IF NOT EXISTS viva_sessions (

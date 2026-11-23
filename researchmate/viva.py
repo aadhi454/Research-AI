@@ -20,13 +20,19 @@ def _paper_context(pages: List[ExtractedPage]) -> str:
 def _parse_json(text: str) -> Dict[str, Any]:
     cleaned = text.strip()
     cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", cleaned, flags=re.IGNORECASE)
+    # Strip trailing commas before closing braces
+    cleaned = re.sub(r",\s*([\]\}])", r"\1", cleaned)
     try:
         data = json.loads(cleaned)
     except json.JSONDecodeError:
         match = re.search(r"\{.*\}", cleaned, flags=re.DOTALL)
         if not match:
             raise ValueError("The AI returned an unreadable response. Please try again.")
-        data = json.loads(match.group(0))
+        try:
+            data = json.loads(match.group(0))
+        except Exception:
+            clean_fixed = re.sub(r",\s*([\]\}])", r"\1", match.group(0))
+            data = json.loads(clean_fixed)
     if not isinstance(data, dict):
         raise ValueError("The AI returned an unexpected response. Please try again.")
     return data

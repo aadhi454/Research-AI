@@ -38,16 +38,16 @@ from researchmate.styles import (
 
 
 st.set_page_config(
-    page_title="Research AI · AGENTIC-AI",
+    page_title="Research AI · Agentic AI",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Inject violet-cosmos CSS and SVG atmosphere — AGENTIC-AI edition
+# Inject modern SaaS styling
 st.html(CUSTOM_CSS)
 
-# Initialize session state for extracted pages, paper metadata, grounded chat, and paper analysis
+# Initialize session state
 if "extracted_pages" not in st.session_state:
     st.session_state["extracted_pages"] = None
 if "paper_pages" not in st.session_state:
@@ -78,78 +78,128 @@ if "flashcard_index" not in st.session_state:
     st.session_state["flashcard_index"] = 0
 if "flashcard_revealed" not in st.session_state:
     st.session_state["flashcard_revealed"] = False
+if "preset_query" not in st.session_state:
+    st.session_state["preset_query"] = ""
 VIVA_QUESTION_LIMIT = 6
 
-# Compact product header
-st.html("""
-<div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;
-margin:.25rem 0 1rem; padding:.8rem 1rem; border:1px solid rgba(192,132,252,.16);
-border-radius:14px; background:rgba(11,4,28,.72); backdrop-filter:blur(14px);">
-  <div>
-    <div style="font-size:.68rem; letter-spacing:.16em; color:#a78bfa; text-transform:uppercase;">AGENTIC-AI workspace</div>
-    <div style="font-size:1.25rem; font-weight:750; color:#f8fafc;">Research AI</div>
-  </div>
-  <div style="font-size:.75rem; color:#a7a0b8;">PDF analysis · Grounded chat · Viva · Slides</div>
-</div>
-""")
+# Top Navigation Bar
+st.html(get_header_html())
 
-# Sidebar configuration and status
+# Modern Sidebar with API Key and Document Management
 with st.sidebar:
-    st.markdown("### 🔬 Research AI · AGENTIC-AI")
-    st.caption("Academic intelligence workspace")
+    st.markdown("### 🔬 Research AI")
+    st.caption("Autonomous Agentic Research Network")
     st.divider()
-    st.subheader("Workspace")
-    if settings.gemini_api_key and settings.gemini_api_key.strip() not in ("", "your_gemini_api_key_here"):
-        st.success("AI services connected", icon=":material/check_circle:")
+
+    st.subheader("⚙️ AI Configuration")
+    active_key = settings.gemini_api_key
+    if active_key and active_key.strip() not in ("", "your_gemini_api_key_here", "replace-with-your-gemini-api-key"):
+        st.success("API key active", icon=":material/check_circle:")
+        with st.expander("Change or override key", expanded=False):
+            custom_key = st.text_input(
+                "Gemini API Key",
+                type="password",
+                value=st.session_state.get("user_gemini_api_key", ""),
+                help="Enter a key for this browser session. It is never stored on disk or logged.",
+                key="sidebar_key_override",
+            )
+            if custom_key and custom_key != st.session_state.get("user_gemini_api_key"):
+                st.session_state["user_gemini_api_key"] = custom_key.strip()
+                st.rerun()
     else:
-        st.info("AI features are ready for deployment secrets.", icon=":material/cloud:")
+        st.warning("API key required", icon=":material/key:")
+        entered_key = st.text_input(
+            "Enter Gemini API Key",
+            type="password",
+            placeholder="AIzaSy...",
+            help="Get your free key at https://aistudio.google.com/ and paste it here.",
+            key="sidebar_key_entry",
+        )
+        if entered_key and entered_key.strip():
+            st.session_state["user_gemini_api_key"] = entered_key.strip()
+            st.rerun()
+
+    model_options = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+    current_model = settings.gemini_model
+    selected_model_idx = model_options.index(current_model) if current_model in model_options else 0
+    selected_model = st.selectbox(
+        "Active Model",
+        options=model_options,
+        index=selected_model_idx,
+        help="Primary model used by the multi-agent system.",
+        key="sidebar_model_select",
+    )
+    if selected_model != st.session_state.get("user_gemini_model"):
+        st.session_state["user_gemini_model"] = selected_model
 
     if st.session_state.get("uploaded_paper_name") and st.session_state.get("extracted_pages"):
         st.divider()
-        st.subheader("Active document")
-        st.markdown(f"📄 **{st.session_state['uploaded_paper_name']}**")
-        st.caption(f"{len(st.session_state['extracted_pages'])} pages ready in session memory")
+        st.subheader("📄 Active Document")
+        st.markdown(f"**{st.session_state['uploaded_paper_name']}**")
+        p_count = len(st.session_state['extracted_pages'])
+        st.caption(f"{p_count} pages loaded in memory")
         if is_paper_fully_indexed(
             st.session_state["uploaded_paper_name"],
             pages=st.session_state["extracted_pages"],
         ):
-            st.caption("⚡ ChromaDB Vector Index: Fully indexed")
+            st.caption("⚡ ChromaDB Vector Store: Indexed")
         else:
-            st.caption("ChromaDB Vector Index: Pending (will index on action)")
+            st.caption("ChromaDB Vector Store: Ready on-demand")
 
         if st.session_state.get("paper_summary_data"):
-            st.caption("📑 Summary: Generated")
+            st.caption("📑 Summary: Ready")
         if st.session_state.get("paper_concepts_data"):
-            st.caption("💡 Key concepts: Extracted")
+            st.caption("💡 Key Concepts: Ready")
         if st.session_state.get("presentation_data"):
-            st.caption("📊 Presentation: Deck ready")
+            st.caption("📊 Presentation: Deck Ready")
 
 overview, paper_chat, viva, slides, flashcards, dashboard = st.tabs(
     ["🏠 Overview", "💬 Paper Chat", "🎓 Viva Practice", "📊 Presentation", "🗂️ Flashcards", "📈 Dashboard"]
 )
 
 with overview:
-    st.subheader("Research workspace")
-    metric1, metric2, metric3 = st.columns(3)
+    st.html(get_hero_html())
+
+    st.subheader("Workspace Overview")
+    metric1, metric2, metric3, metric4 = st.columns(4)
     with metric1:
         st.metric(
-            "Active paper",
-            st.session_state["uploaded_paper_name"] or "Not uploaded",
+            "Active Paper",
+            st.session_state["uploaded_paper_name"] or "None",
         )
     with metric2:
         st.metric(
-            "Pages ready",
+            "Pages Extracted",
             len(st.session_state["extracted_pages"] or []),
         )
     with metric3:
+        is_indexed = is_paper_fully_indexed(
+            st.session_state.get("uploaded_paper_name", "") or "",
+            pages=st.session_state.get("extracted_pages"),
+        ) if st.session_state.get("uploaded_paper_name") else False
+        st.metric("Vector Store", "Indexed" if is_indexed else "Ready")
+    with metric4:
         completed = sum(
             bool(st.session_state.get(key))
             for key in ("paper_summary_data", "paper_concepts_data", "presentation_data", "flashcard_deck")
         )
-        st.metric("Outputs generated", completed)
+        st.metric("Artifacts Built", completed)
 
-    st.markdown("#### Agent workflow")
+    st.markdown("#### 🤖 Autonomous Agent Network")
     st.html(get_workflow_cards_html())
+
+    st.markdown("#### 🚀 Quick Start Guide")
+    with st.container(border=True):
+        qs1, qs2, qs3 = st.columns(3)
+        with qs1:
+            st.markdown("**1. Upload Paper**")
+            st.caption("Go to the **💬 Paper Chat** tab to upload any PDF. Digital text is parsed page-by-page preserving 1-based page coordinates.")
+        with qs2:
+            st.markdown("**2. Grounded Discovery**")
+            st.caption("Generate a 6-section academic summary, extract theoretical frameworks, or chat with verified citations.")
+        with qs3:
+            st.markdown("**3. Slides & Viva Defense**")
+            st.caption("Generate academic 16:9 PowerPoint decks in the **📊 Presentation** tab, or drill oral exam questions in **🎓 Viva Practice**.")
 
 with paper_chat:
     st.subheader("📄 Paper Intake & Grounded Chat")
@@ -406,17 +456,38 @@ with paper_chat:
                                     st.caption(f"Document: {st.session_state['uploaded_paper_name']} · Page {p_num}")
                                     st.text(page_sources[p_num], wrap=True)
 
-        # Unified "Ask ResearchMate" & Grounded Chat Section
+        # Unified "Ask Research AI" & Grounded Chat Section
         st.divider()
         st.subheader("🧠 Ask Research AI")
         st.caption(
-            "Ask a question about this paper, request a full summary or key concepts, or inquire about viva and presentations. "
-            "Research AI automatically detects your intent and routes to the right feature."
+            "Ask questions about this paper, request full summaries, extract concepts, or generate presentation decks. "
+            "Research AI automatically detects your intent and routes to the appropriate specialist agent."
         )
 
+        st.markdown("##### 💡 Example research queries")
+        eq1, eq2, eq3, eq4 = st.columns(4)
+        with eq1:
+            if st.button("Core Problem & Gap", key="btn_eq1", help="What motivating problem does this paper address?"):
+                st.session_state["preset_query"] = "What core problem and motivating research gap does this paper address?"
+                st.rerun()
+        with eq2:
+            if st.button("Methodology & Data", key="btn_eq2", help="How was the study conducted and evaluated?"):
+                st.session_state["preset_query"] = "What is the detailed methodology, architecture, and datasets used?"
+                st.rerun()
+        with eq3:
+            if st.button("Key Findings & Results", key="btn_eq3", help="What are the principal benchmark discoveries?"):
+                st.session_state["preset_query"] = "What are the primary empirical findings, benchmark results, and contributions?"
+                st.rerun()
+        with eq4:
+            if st.button("Limitations & Threats", key="btn_eq4", help="What constraints are acknowledged by the authors?"):
+                st.session_state["preset_query"] = "What limitations, constraints, and future work are acknowledged by the authors?"
+                st.rerun()
+
+        default_input = st.session_state.pop("preset_query", "") or ""
         with st.form("paper_qa_form", clear_on_submit=True):
             user_question = st.text_input(
                 "Ask a question or request an action",
+                value=default_input,
                 placeholder="e.g. 'What dataset was used?', 'Summarize this paper', 'Extract key concepts', 'Can we practice viva?'",
                 key="qa_question_input",
             )
@@ -499,19 +570,22 @@ with paper_chat:
                 with st.container(border=True):
                     col_q, col_route = st.columns([3, 1], vertical_alignment="center")
                     with col_q:
-                        st.markdown(f"**Request:** {item['question']}")
+                        st.markdown(f"**Query:** {item['question']}")
                     with col_route:
                         route_lbl = item.get("route_label", "Grounded Paper Chat")
-                        st.caption(f":material/alt_route: **Routed to:** {route_lbl}")
+                        st.markdown(f"<span class='rp-badge'>⚡ {route_lbl}</span>", unsafe_allow_html=True)
 
-                    st.markdown(f"**Response:**\n\n{item['answer']}")
+                    st.markdown(f"**Answer:**\n\n{item['answer']}")
                     if item.get("elapsed"):
-                        st.caption(f"⚡ Handled in {item['elapsed']:.1f}s · {item.get('route_label', 'Grounded Paper Chat')}")
+                        st.caption(f"⏱️ Handled in {item['elapsed']:.1f}s")
 
                     # Chunk sources (for paper_question)
                     sources = item.get("sources", [])
                     if sources:
-                        st.caption("🔍 **Retrieved page evidence:** (expand to inspect original passage)")
+                        cited_page_nums = sorted(list(set(src.metadata.get("page", 1) for src in sources)))
+                        pills_html = "".join(f"<span class='rp-citation-pill'>📄 Page {p}</span>" for p in cited_page_nums)
+                        st.markdown(f"<div style='margin:0.5rem 0;'><b>Verified Excerpts:</b> {pills_html}</div>", unsafe_allow_html=True)
+                        st.caption("🔍 **Evidence Passages:** (expand to inspect original excerpt)")
                         for s_i, src in enumerate(sources, 1):
                             p_num = src.metadata.get("page", "?")
                             c_idx = src.metadata.get("chunk_index", 0)
@@ -523,7 +597,9 @@ with paper_chat:
                     cited_pages = item.get("cited_pages", [])
                     page_sources = item.get("page_sources", {})
                     if cited_pages and page_sources:
-                        st.caption("🔍 **Cited page evidence & source passages:** (expand to inspect original page text)")
+                        pills_html = "".join(f"<span class='rp-citation-pill'>📄 Page {p}</span>" for p in cited_pages)
+                        st.markdown(f"<div style='margin:0.5rem 0;'><b>Cited Pages:</b> {pills_html}</div>", unsafe_allow_html=True)
+                        st.caption("🔍 **Source Passages:** (expand to inspect original page text)")
                         for p_num in cited_pages:
                             if p_num in page_sources:
                                 page_obj = next((p for p in pages if p.page_number == p_num), None) if pages else None
@@ -1244,13 +1320,18 @@ with dashboard:
         ])
         st.dataframe(recent, hide_index=True, width="stretch")
 
-# Bottom academic footer with framing corner stars
+# Clean modern footer
 st.html(
     """
-    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(56,217,214,0.16); padding-top:1.5rem; margin-top:3rem; font-family:ui-monospace,monospace; font-size:0.75rem; color:#64748b;">
-      <span class="rm-corner-star">✦</span>
-      <span style="letter-spacing:0.08em;">RESEARCHMATE AI · EMPOWERING RESEARCH DEFENSE</span>
-      <span class="rm-corner-star">✦</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.5rem; margin-top:3rem; font-size:0.78rem; color:#64748b;">
+      <div>🔬 <b>Research AI</b> · Agentic Academic Intelligence & Discovery Platform</div>
+      <div style="display:flex; gap:0.75rem;">
+        <span>Page-Aware Extraction</span>
+        <span>·</span>
+        <span>Grounded ChromaDB RAG</span>
+        <span>·</span>
+        <span>Google Gemini</span>
+      </div>
     </div>
     """
 )

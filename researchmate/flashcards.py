@@ -18,13 +18,23 @@ def _paper_text(pages: List[ExtractedPage]) -> str:
 
 def _parse_cards(response: str) -> List[Dict[str, str]]:
     cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", response.strip(), flags=re.IGNORECASE)
+    cleaned = re.sub(r",\s*([\]\}])", r"\1", cleaned)
     try:
         data = json.loads(cleaned)
     except json.JSONDecodeError:
         match = re.search(r"\[.*\]", cleaned, flags=re.DOTALL)
         if not match:
             raise ValueError("The AI returned an unreadable flashcard set. Please try again.")
-        data = json.loads(match.group(0))
+        try:
+            data = json.loads(match.group(0))
+        except Exception:
+            clean_fixed = re.sub(r",\s*([\]\}])", r"\1", match.group(0))
+            data = json.loads(clean_fixed)
+    if isinstance(data, dict):
+        for k in ("cards", "flashcards", "deck"):
+            if k in data and isinstance(data[k], list):
+                data = data[k]
+                break
     if not isinstance(data, list):
         raise ValueError("The AI returned an unexpected flashcard format. Please try again.")
     cards: List[Dict[str, str]] = []
@@ -36,7 +46,7 @@ def _parse_cards(response: str) -> List[Dict[str, str]]:
         citation = str(item.get("citation", "")).strip()
         if question and answer:
             cards.append({"question": question, "answer": answer, "citation": citation})
-    if len(cards) < 5:
+    if len(cards) < 3:
         raise ValueError("The paper did not produce enough usable flashcards. Please try again.")
     return cards[:12]
 

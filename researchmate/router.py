@@ -101,18 +101,45 @@ def parse_raw_intent(raw_text: str) -> str:
     return "unclear"
 
 
+def _heuristic_intent(text: str) -> str:
+    """Fast, deterministic fallback rule-based intent classification."""
+    lower = text.lower().strip()
+    if any(k in lower for k in ["summarize", "summary", "overview", "executive summary", "abstract", "brief"]):
+        return "summary"
+    if any(k in lower for k in ["key concepts", "concepts", "terminology", "theoretical framework", "core terms"]):
+        return "key_concepts"
+    if any(k in lower for k in ["viva", "oral defense", "mock exam", "defense question", "examine"]):
+        return "viva"
+    if any(k in lower for k in ["slide", "slides", "presentation", "powerpoint", "ppt", "deck"]):
+        return "presentation"
+    if any(k in lower for k in ["flashcard", "flashcards", "study card", "revision card"]):
+        return "flashcards"
+    if len(text.split()) >= 2 or any(k in lower for k in ["what", "how", "why", "when", "where", "which", "who", "explain", "method", "problem", "dataset"]):
+        return "paper_question"
+    return "unclear"
+
+
 def detect_intent(
     user_input: str,
     timeout: float = 15.0,
 ) -> str:
-    """Classify user intent using the configured Gemini model with low reasoning effort."""
+    """Classify user intent using Gemini with deterministic heuristic fallback."""
     text = user_input.strip()
     if not text:
         return "unclear"
 
-    chain = build_intent_detection_chain(timeout=timeout, thinking_level="low")
-    raw_response = chain.invoke({"user_input": text})
-    return parse_raw_intent(raw_response)
+    try:
+        chain = build_intent_detection_chain(timeout=timeout)
+        raw_response = chain.invoke({"user_input": text})
+        parsed = parse_raw_intent(raw_response)
+        if parsed in VALID_INTENTS and parsed != "unclear":
+            return parsed
+        # If model returned unclear or ambiguous, check heuristic
+        heur = _heuristic_intent(text)
+        return heur if heur != "unclear" else "unclear"
+    except Exception:
+        # Fallback to deterministic heuristic when LLM classification fails
+        return _heuristic_intent(text)
 
 
 def execute_routed_request(

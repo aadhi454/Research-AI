@@ -64,26 +64,35 @@ def format_actionable_error(exc: Exception, api_key: Optional[str] = None) -> st
 
     msg_lower = msg.lower()
 
-    if "api_key_invalid" in msg_lower or "api key not valid" in msg_lower or "invalid_argument" in msg_lower and "key" in msg_lower:
+    if "api key is not configured" in msg_lower or "missingapikey" in msg_lower:
         return (
-            "Invalid Gemini API key. Please check your GEMINI_API_KEY in your local .env file "
-            "and verify that it is active in Google AI Studio (https://aistudio.google.com/)."
+            "Gemini API key is required. Please enter your API key in the sidebar under 'AI Configuration', "
+            "or set GEMINI_API_KEY in your Streamlit Cloud Secrets / .env file."
+        )
+    if "api_key_invalid" in msg_lower or "api key not valid" in msg_lower or ("invalid_argument" in msg_lower and "key" in msg_lower):
+        return (
+            "Invalid Gemini API key. Please check your GEMINI_API_KEY and verify that it is active in Google AI Studio (https://aistudio.google.com/)."
+        )
+    if "permission_denied" in msg_lower:
+        return (
+            "Permission denied by Google AI Studio. Please verify that your API key has access to Gemini models and has billing or quota configured."
         )
     if "deadline" in msg_lower or "timed out" in msg_lower or "timeout" in msg_lower or "504" in msg_lower:
         return (
             "Gemini request timed out (504 Deadline Exceeded). "
-            "The model took too long to generate a response. "
-            "Please check your internet connection and try submitting your question again."
+            "The model took too long to generate a response. Please try submitting again."
         )
     if "resource_exhausted" in msg_lower or "429" in msg_lower or "quota" in msg_lower:
         return (
-            "Gemini API rate limit or quota exceeded. "
-            "Please wait a moment before sending another question, or check your quota in Google AI Studio."
+            "Gemini API rate limit or quota exceeded. Please wait a moment before trying again, or check your quota in Google AI Studio."
+        )
+    if "not found" in msg_lower or "404" in msg_lower:
+        return (
+            "The requested AI model was not found or is unsupported for this API version. Research AI automatically switches to gemini-2.0-flash."
         )
     if "dns" in msg_lower or "nodename" in msg_lower or "503" in msg_lower or "connecterror" in msg_lower or "connectionerror" in msg_lower:
         return (
-            "Unable to connect to Google Gemini services. "
-            "Please verify your internet connection, proxy, or firewall settings."
+            "Unable to connect to Google Gemini services. Please verify your internet connection, proxy, or firewall settings."
         )
 
     return f"Service error: {msg}"
@@ -94,10 +103,16 @@ class GeminiRetrievalEmbeddings(Embeddings):
     - RETRIEVAL_DOCUMENT when embedding document passages for ChromaDB storage.
     - RETRIEVAL_QUERY when embedding the user query for similarity search.
 
-    Configured with a 30-second timeout to avoid indefinite hangs.
+    Configured with fallback to stable models and clean timeout handling.
     """
 
     def __init__(self, model: str, google_api_key: str, timeout: float = 60.0):
+        # Automatically map non-existent or deprecated embedding models
+        if not model or "gemini-embedding" in model or "embedding-001" in model:
+            model = "models/text-embedding-004"
+        elif not model.startswith("models/"):
+            model = f"models/{model}"
+
         self.model = model
         self.google_api_key = google_api_key
         self.timeout = timeout
@@ -123,7 +138,7 @@ class GeminiRetrievalEmbeddings(Embeddings):
         try:
             return self._doc_embedder.embed_documents(texts)
         except Exception as exc:
-            # Fallback without task_type if model does not support it
+            # Fallback 1: without task_type
             try:
                 fallback = GoogleGenerativeAIEmbeddings(
                     model=self.model,
@@ -131,16 +146,25 @@ class GeminiRetrievalEmbeddings(Embeddings):
                     request_options={"timeout": self.timeout},
                 )
                 return fallback.embed_documents(texts)
-            except Exception as inner_exc:
-                actionable = format_actionable_error(inner_exc, self.google_api_key)
-                raise EmbeddingError(actionable) from exc
+            except Exception:
+                # Fallback 2: using models/text-embedding-004 directly
+                try:
+                    fallback_default = GoogleGenerativeAIEmbeddings(
+                        model="models/text-embedding-004",
+                        google_api_key=self.google_api_key,
+                        request_options={"timeout": self.timeout},
+                    )
+                    return fallback_default.embed_documents(texts)
+                except Exception as inner_exc:
+                    actionable = format_actionable_error(inner_exc, self.google_api_key)
+                    raise EmbeddingError(actionable) from exc
 
     def embed_query(self, text: str) -> List[float]:
         """Embed user query using RETRIEVAL_QUERY task type."""
         try:
             return self._query_embedder.embed_query(text)
         except Exception as exc:
-            # Fallback without task_type if model does not support it
+            # Fallback 1: without task_type
             try:
                 fallback = GoogleGenerativeAIEmbeddings(
                     model=self.model,
@@ -148,9 +172,18 @@ class GeminiRetrievalEmbeddings(Embeddings):
                     request_options={"timeout": self.timeout},
                 )
                 return fallback.embed_query(text)
-            except Exception as inner_exc:
-                actionable = format_actionable_error(inner_exc, self.google_api_key)
-                raise EmbeddingError(actionable) from exc
+            except Exception:
+                # Fallback 2: using models/text-embedding-004 directly
+                try:
+                    fallback_default = GoogleGenerativeAIEmbeddings(
+                        model="models/text-embedding-004",
+                        google_api_key=self.google_api_key,
+                        request_options={"timeout": self.timeout},
+                    )
+                    return fallback_default.embed_query(text)
+                except Exception as inner_exc:
+                    actionable = format_actionable_error(inner_exc, self.google_api_key)
+                    raise EmbeddingError(actionable) from exc
 
 
 def split_pages_into_chunks(
@@ -256,14 +289,20 @@ def get_embedding_function(api_key: Optional[str] = None, timeout: float = 60.0)
     )
 
 
-def get_chroma_client() -> chromadb.PersistentClient:
-    """Create or return a persistent ChromaDB client using CHROMA_DIR."""
+def get_chroma_client() -> chromadb.api.ClientAPI:
+    """Create or return a ChromaDB client using CHROMA_DIR with in-memory fallback for cloud environments."""
     persist_dir = settings.chroma_dir or "./chroma_db"
-    os.makedirs(persist_dir, exist_ok=True)
-    return chromadb.PersistentClient(
-        path=persist_dir,
-        settings=ChromaSettings(anonymized_telemetry=False),
-    )
+    try:
+        os.makedirs(persist_dir, exist_ok=True)
+        return chromadb.PersistentClient(
+            path=persist_dir,
+            settings=ChromaSettings(anonymized_telemetry=False),
+        )
+    except Exception:
+        # Fallback to in-memory EphemeralClient for cloud sandboxes without persistent write permissions
+        return chromadb.EphemeralClient(
+            settings=ChromaSettings(anonymized_telemetry=False)
+        )
 
 
 def get_vectorstore(

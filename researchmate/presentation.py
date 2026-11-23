@@ -436,31 +436,47 @@ def parse_and_validate_outline(
     """Parse and strictly validate JSON slide outline from Gemini response."""
     cleaned = raw_response.strip()
 
-    # Strip code block wrappers if model enclosed output in markdown fences
-    if cleaned.startswith("```json"):
-        cleaned = cleaned[7:]
-    elif cleaned.startswith("```"):
-        cleaned = cleaned[3:]
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3]
+    # Normalize markdown code fences and preamble
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
     cleaned = cleaned.strip()
 
+    data = None
     try:
         data = json.loads(cleaned)
-    except json.JSONDecodeError as exc:
-        # Fallback: attempt to find JSON array brackets
-        match = re.search(r"\[\s*\{.*\}\s*\]", cleaned, re.DOTALL)
-        if match:
-            try:
-                data = json.loads(match.group(0))
-            except Exception:
-                raise PresentationError(
-                    f"Invalid slide outline format: Failed to parse JSON response ({exc})."
-                ) from exc
-        else:
-            raise PresentationError(
-                f"Invalid slide outline format: Expected JSON array of slide objects ({exc})."
-            ) from exc
+    except json.JSONDecodeError:
+        # Fallback 1: strip trailing commas which models often produce
+        fixed = re.sub(r",\s*([\]\}])", r"\1", cleaned)
+        try:
+            data = json.loads(fixed)
+        except Exception:
+            # Fallback 2: locate array brackets [ ... ]
+            match = re.search(r"\[\s*\{.*\}\s*\]", cleaned, re.DOTALL)
+            if match:
+                try:
+                    data = json.loads(match.group(0))
+                except Exception:
+                    pass
+            # Fallback 3: locate object brackets { ... }
+            if data is None:
+                match_obj = re.search(r"\{.*\}", cleaned, re.DOTALL)
+                if match_obj:
+                    try:
+                        data = json.loads(match_obj.group(0))
+                    except Exception:
+                        pass
+
+    if data is None:
+        raise PresentationError(
+            "Invalid slide outline format: Failed to parse JSON slide deck from model output."
+        )
+
+    # If model wrapped list in a dictionary (e.g. {"slides": [...]})
+    if isinstance(data, dict):
+        for key in ("slides", "presentation", "deck", "outline", "data"):
+            if key in data and isinstance(data[key], list):
+                data = data[key]
+                break
 
     if not isinstance(data, list) or len(data) == 0:
         raise PresentationError("Slide outline must be a non-empty list of slide objects.")
@@ -559,9 +575,10 @@ def parse_and_validate_outline(
             }
         )
 
-    if len(validated) < 3:
+    min_required = min(3, expected_count)
+    if len(validated) < min_required:
         raise PresentationError(
-            f"Generated slide outline is too brief ({len(validated)} slides parsed; minimum 3 required)."
+            f"Generated slide outline is too brief ({len(validated)} slides parsed; minimum {min_required} required)."
         )
 
     return validated

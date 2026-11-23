@@ -180,8 +180,8 @@ streamlit run app.py
 
 ```toml
 GEMINI_API_KEY = "your-gemini-api-key"
-GEMINI_MODEL = "gemini-2.5-flash"
-GEMINI_EMBEDDING_MODEL = "models/gemini-embedding-001"
+GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_EMBEDDING_MODEL = "models/text-embedding-004"
 CHROMA_DIR = "./chroma_db"
 ```
 
